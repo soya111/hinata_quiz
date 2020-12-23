@@ -1,0 +1,24 @@
+{% extends 'api/layout.html' %}
+
+{% block title %}Quiz{% endblock %}
+{% block h1 %}Quiz詳細{% endblock %}
+
+{% block content %}
+<div class="row center-align">
+    <p>問題文：{{ object }}</p>
+    <p>選択肢</p>
+    {% for choice in object.get_choices %}
+        <p
+            {% if choice.is_correct %}
+            style="color:crimson"
+            {% endif %}
+        >{{ choice.text }}</p>
+    {% endfor %}
+    <p>作成者：{{ object.user.username }}</p>
+    {% if user == object.user %}
+    <a class="waves-effect waves-light btn" href="{% url 'quiz-edit' object.id %}"><i class="material-icons left">edit</i>編集</a>
+    {% endif %}
+
+</div>
+{% endblock %}
+

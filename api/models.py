@@ -15,7 +15,7 @@ class Quiz(models.Model):
         return self.statement
 
     def get_choices(self):
-        return Choice.objects.filter(quiz_id=self.id).all()
+        return Choice.objects.filter(quiz_id=self.id).all().order_by('?')
 
 
 class Choice(models.Model):

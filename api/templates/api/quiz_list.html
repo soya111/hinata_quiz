@@ -1,17 +1,38 @@
-<title>Quiz一覧</title>
-<h1>Quiz</h1>
+{% extends 'api/layout.html' %}
+
+{% block title %}Quiz一覧{% endblock %}
+{% block h1 %}Quiz{% endblock %}
+
+{% block content %}
 <ul>
-{% for quiz in object_list %}
-    <li>{{ quiz }}</li>
-    {% for choice in quiz.get_choices %}
-        <p
-            {% if choice.is_correct %}
-            style="color:crimson"
-            {% endif %}
-        >{{ choice.text }}</p>
+    <div class="row">
+    {% for quiz in object_list %}
+        <div class="col s12 m6 l4">
+            <div class="card">
+                <div class="card-image">
+                    <img src="{{ quiz.thumbnail_image_url }}">
+                    <span class="card-title">{{ quiz.title }}</span>
+                    <a class="btn-floating halfway-fab waves-effect waves-light red" href="{% url 'quiz-detail' quiz.id %}"><i class="material-icons">edit</i></a>
+                </div>
+                <div class="card-content">
+                    <p>{{ quiz }}</p>
+                    <ul class="collection">
+                        {% for choice in quiz.get_choices %}
+                            <li
+                                {% if choice.is_correct %}
+                                style="color:crimson"
+                                {% endif %}
+                                class="collection-item"
+                            >{{ choice.text }}</li>
+                        {% endfor %}
+                    </ul>
+                    <p>作成者:{{ quiz.user.username }}</p>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <li>No articles yet.</li>
     {% endfor %}
-    <p>作成者:{{ quiz.user.username }}</p>
-{% empty %}
-    <li>No articles yet.</li>
-{% endfor %}
+    </div>
 </ul>
+{% endblock %}

@@ -58,7 +58,7 @@ ROOT_URLCONF = 'hinata_quiz.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['./templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -135,6 +135,8 @@ else:
         filename='/my_log_file.log',
         filemode='a'
     )
+
+LOGIN_REDIRECT_URL = '/'
 
 
 try:

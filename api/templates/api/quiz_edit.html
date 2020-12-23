@@ -1,0 +1,36 @@
+{% extends 'api/layout.html' %}
+
+{% block title %}Quiz{% endblock %}
+{% block h1 %}Quiz編集{% endblock %}
+
+{% block content %}
+<div class="row center-align">
+
+    <form action="{% url 'quiz-edit' quiz.id %}" method="post">
+        {% csrf_token %}
+        <table class="table" style="margin: 1rem;">
+            {{form.as_table}}
+        </table>
+        <button type="submit" class="waves-effect waves-light btn" style="margin: 1rem;">変更</button>
+    </form>
+    <img src="{{quiz.thumbnail_image_url}}" alt="">
+    <p>選択肢</p>
+    <ul class="collection">
+        {% for choice in quiz.get_choices %}
+            <li
+                {% if choice.is_correct %}
+                style="color:crimson"
+                {% endif %}
+                class="collection-item"
+            >{{ choice.text }}</li>
+        {% endfor %}
+    </ul>
+</div>
+<style>
+textarea, input {
+    height: 2rem;
+    max-width: 70%;
+}
+</style>
+{% endblock %}
+
