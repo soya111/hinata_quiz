@@ -1,0 +1,17 @@
+<title>Quiz一覧</title>
+<h1>Quiz</h1>
+<ul>
+{% for quiz in object_list %}
+    <li>{{ quiz }}</li>
+    {% for choice in quiz.get_choices %}
+        <p
+            {% if choice.is_correct %}
+            style="color:crimson"
+            {% endif %}
+        >{{ choice.text }}</p>
+    {% endfor %}
+    <p>作成者:{{ quiz.user.username }}</p>
+{% empty %}
+    <li>No articles yet.</li>
+{% endfor %}
+</ul>

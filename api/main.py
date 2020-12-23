@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 
 import os
 import logging
 import json
 import random
-import log.logconfig
+# import log.logconfig
 from utils import tool
 from dotenv import load_dotenv
 
@@ -16,7 +17,7 @@ from linebot import (
     LineBotApi, WebhookHandler
 )
 from linebot.exceptions import (
-    InvalidSignatureError
+    InvalidSignatureError, LineBotApiError
 )
 from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage,
@@ -58,31 +59,31 @@ handler = WebhookHandler(channel_secret)
 def index(request):
 
     # デバッグ用
-    logger.debug('index start')
+    # logger.debug('index start')
 
     # リクエストが Post のみ
     if request.method == 'POST':
         reply = ''
 
-        # # get X-Line-Signature header value
-        # signature = request.headers['X-Line-Signature']
+        # get X-Line-Signature header value
+        x_line_signature = request.headers['X-Line-Signature']
 
-        # # get request body
-        # body = request.body
+        # get request body
+        body = request.body.decode('utf-8')
 
-        # # handle webhook body
-        # try:
-        #     handler.handle(body, signature)
-        # except InvalidSignatureError:
-        #     print(
-        #         "Invalid signature. Please check your channel access token/channel secret.")
-        #     abort(400)
+        # handle webhook body
+        try:
+            handler.handle(body, x_line_signature)
+        except InvalidSignatureError:
+            print(
+                "Invalid signature. Please check your channel access token/channel secret.")
+            abort(400)
 
         # リクエスト取得
-        request_json = json.loads(request.body.decode('utf-8'))
+        request_json = json.loads(body)
 
         # LineBot ログの出力
-        out_log = tool.out_put_log(request)
+        # out_log = tool.out_put_log(request)
 
         try:
             # リクエストが空でないことを確認
@@ -91,7 +92,7 @@ def index(request):
                 # イベントの取得
                 for event in request_json['events']:
                     reply_token = event['replyToken']
-                    # print(event)
+                    logger.debug(event)
                     if event['type'] == 'message':
                         message_type = event['message']['type']
 
@@ -120,27 +121,11 @@ def index(request):
                     elif event['type'] == 'follow':
                         line_bot_api.reply_message(
                             reply_token, TextSendMessage(text='フォローありがとうございます'))
-                    # elif event['type'] == 'unfollow':
-                    #     logger.debug(event)
+                    elif event['type'] == 'unfollow':
+                        logger.debug(event)
                     elif event['type'] == 'postback':
-                        data = eval(event['postback']['data'])
-
-                        if data['type'] == 'push_quiz':
-                            push_quiz(reply_token)
-                        elif data['type'] == 'quiz_answer':
-                            try:
-                                # line_bot_api.reply_message(
-                                #     reply_token, TextSendMessage(text=str(data)))
-
-                                push_correct_message(reply_token)
-                            except Exception as e:
-                                print("now", e.message)
-
-                            # push_correct_message(
-                            #     reply_token) if data['is_correct'] else push_incorrect_message(reply_token)
-                        else:
-                            line_bot_api.reply_message(
-                                reply_token, TextSendMessage(text=str(data)))
+                        handle_postback(eval(event['postback']['data']),
+                                        reply_token, event['source'])
         except LineBotApiError as e:
             print("Got exception from LINE Messaging API: %s\n" % e.message)
             for m in e.error.details:
@@ -152,10 +137,13 @@ def index(request):
         except Exception as e:
             print(e)
 
-    # デバッグ用
-    logger.debug('index end')
-    # ステータスコード 200 を返却(画面に表示させないので、なんでもいい)
-    return HttpResponse(status=200)
+        # デバッグ用
+        # logger.debug('index end')
+        # ステータスコード 200 を返却
+        return HttpResponse(status=200)
+
+    elif request.method == 'GET':
+        return HttpResponseRedirect(reverse('quiz-list'))
 
 
 def handle_text(message, reply_token, source):
@@ -166,7 +154,7 @@ def handle_text(message, reply_token, source):
             thumbnail_image_url='https://cdn.hinatazaka46.com/images/14/f83/e7263bcddc5eee48b45337ace26dd.jpg',
             actions=[
                 PostbackAction(label='クイズスタート', data='{"type":"push_quiz"}'),
-                PostbackAction(label='クイズ投稿', data='ping'),
+                PostbackAction(label='クイズ投稿', data='{"type":"create_quiz"}'),
             ])
         template_message = TemplateSendMessage(
             alt_text='日向坂46クイズ', template=buttons_template)
@@ -178,10 +166,31 @@ def handle_text(message, reply_token, source):
         pass
 
 
+def handle_postback(data, reply_token, source):
+    if data['type'] == 'push_quiz':
+        push_quiz(reply_token)
+    elif data['type'] == 'quiz_answer':
+        # try:
+        #     # line_bot_api.reply_message(
+        #     #     reply_token, TextSendMessage(text=str(data)))
+        # except Exception as e:
+        #     print("now", e.message)
+
+        if data['is_correct'] == True:
+            push_correct_message(reply_token)
+        else:
+            push_incorrect_message(reply_token)
+    elif data['type'] == 'create_quiz':
+        line_bot_api.reply_message(
+            reply_token, TextSendMessage(text='クイズ作成はこちらから'))
+    else:
+        line_bot_api.reply_message(
+            reply_token, TextSendMessage(text=str(data)))
+
+
 def push_quiz(reply_token):
-    id = random.randint(1, Quiz.objects.all().count())
-    quiz = Quiz.objects.filter(id=id)[0]
-    choices = Choice.objects.filter(quiz_id=id).all()
+    quiz = Quiz.objects.filter(is_approved=True).order_by('?')[:1][0]
+    choices = quiz.get_choices()
 
     buttons_template = ButtonsTemplate(
         title=quiz.title,
@@ -244,7 +253,7 @@ def push_incorrect_message(reply_token):
     buttons_template = ButtonsTemplate(
         title='不正解',
         text='残念～',
-        thumbnail_image_url=random.sample(thumbnail_image_urls, 1),
+        thumbnail_image_url=random.sample(thumbnail_image_urls, 1)[0],
         actions=[
             PostbackAction(
                 label='次のクイズへ',
