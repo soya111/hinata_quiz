@@ -1,0 +1,53 @@
+{% extends 'api/layout.html' %}
+
+{% block title %}Quiz{% endblock %}
+{% block h1 %}Quiz作成{% endblock %}
+
+{% block content %}
+<div class="row center-align">
+
+    <form action="{% url 'quiz-add' %}" method="post">
+        {% csrf_token %}
+        <table class="table" style="margin: 1rem;">
+            {{quiz_form.as_table}}
+        </table>
+        <p>選択肢</p>
+        <table style="margin: 1rem;">
+            <tr>
+                <th>正解</th>
+            </tr>
+            <tr>
+                <th><input type="text" name="correct_choice" id="correct_choice"></th>
+            </tr>
+            <tr>
+                <th>不正解</th>
+            </tr>
+            <tr>
+                <th><input type="text" name="incorrect_choice-1" id="incorrect_choice1"></th>
+            </tr>
+            <tr>
+                <th><input type="text" name="incorrect_choice-2" id="incorrect_choice2"></th>
+            </tr>
+            <tr>
+                <th><input type="text" name="incorrect_choice-3" id="incorrect_choice3"></th>
+            </tr>
+
+        </table>
+        <div class="d-grid gap-2 col-6 mx-auto mb-5">
+            <button type="submit" class="btn btn-info" style="margin: 1rem;">作成</button>
+        </div>
+
+    </form>
+</div>
+<style>
+textarea, input {
+    height: 2rem;
+    max-width: 70%;
+}
+table {
+    width: 90%;
+    margin: 0 auto;
+}
+</style>
+{% endblock %}
+
