@@ -92,7 +92,7 @@ class QuizCreateView(CreateView, LoginRequiredMixin):
 def edit(request, id):
     quiz = Quiz.objects.get(id=id)
     if quiz.user != request.user:
-        return HttpResponse("権限がありません", status=403)
+        return HttpResponse("権限がありません。ログインしてください。", status=403)
 
     if request.method == "GET":
         template_name = 'api/quiz_edit.html'
@@ -134,3 +134,19 @@ def edit(request, id):
 
         #     fields = ['title', 'statement', 'thumbnail_image_url']
         #     template_name = 'api/quiz_edit.html'
+
+
+class UserQuizListView(ListView, LoginRequiredMixin):
+    model = Quiz
+    template_name = 'api/account.html'
+
+    def get(self, request):
+
+        if not request.user.is_authenticated:
+            return HttpResponseRedirect(reverse('login'))
+
+        quiz_list = Quiz.objects.filter(user=request.user)
+        context = {
+            'object_list': quiz_list
+        }
+        return render(request, self.template_name, context)
