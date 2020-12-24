@@ -14,13 +14,6 @@ from django.urls import reverse_lazy, reverse
 import json
 
 
-# @csrf_exempt
-# def index(request):
-#     quiz = Quiz.objects.all()
-#     data = [i.user for i in quiz]
-
-#     return HttpResponse(quiz[0].user.username)
-
 class SignUpView(CreateView):
     form_class = UserCreationForm
     success_url = reverse_lazy('login')
@@ -54,8 +47,8 @@ class QuizCreateView(CreateView, LoginRequiredMixin):
     template_name = 'api/quiz_add.html'
 
     def get(self, request):
-        # if not request.user.is_authenticated:
-        #     return HttpResponseRedirect(reverse('login'))
+        if not request.user.is_authenticated:
+            return HttpResponseRedirect(reverse('login') + '?next=' + reverse('quiz-add'))
         context = {
             'quiz_form': QuizForm(),
         }
@@ -63,7 +56,7 @@ class QuizCreateView(CreateView, LoginRequiredMixin):
 
     def post(self, request):
         if not request.user.is_authenticated:
-            return HttpResponseRedirect(reverse('login'))
+            return HttpResponseRedirect(reverse('login') + '?next=' + reverse('quiz-add'))
 
         choices = [
             request.POST['incorrect_choice-{}'.format(i)] for i in range(1, 4)]
@@ -89,6 +82,7 @@ class QuizCreateView(CreateView, LoginRequiredMixin):
         return HttpResponseRedirect(reverse('quiz-detail', args=[quiz.id]))
 
 
+@login_required()
 def edit(request, id):
     quiz = Quiz.objects.get(id=id)
     if quiz.user != request.user:

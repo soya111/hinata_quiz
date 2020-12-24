@@ -162,8 +162,6 @@ def handle_text(message, reply_token, source):
         line_bot_api.reply_message(reply_token, template_message)
 
     else:
-        # line_bot_api.reply_message(
-        #     reply_token, TextSendMessage(text=message['text']))
         pass
 
 
@@ -171,19 +169,10 @@ def handle_postback(data, reply_token, source):
     if data['type'] == 'push_quiz':
         push_quiz(reply_token)
     elif data['type'] == 'quiz_answer':
-        # try:
-        #     # line_bot_api.reply_message(
-        #     #     reply_token, TextSendMessage(text=str(data)))
-        # except Exception as e:
-        #     print("now", e.message)
-
         if data['is_correct'] == True:
             push_correct_message(reply_token)
         else:
             push_incorrect_message(reply_token)
-    elif data['type'] == 'create_quiz':
-        line_bot_api.reply_message(
-            reply_token, TextSendMessage(text='クイズ作成はこちらから'))
     else:
         line_bot_api.reply_message(
             reply_token, TextSendMessage(text=str(data)))
