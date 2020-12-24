@@ -5,9 +5,10 @@ from django.contrib.auth.models import User
 
 
 class Quiz(models.Model):
-    title = models.TextField(max_length=50)
-    statement = models.TextField(max_length=200)
-    thumbnail_image_url = models.URLField(max_length=1000)
+    title = models.TextField(max_length=50, verbose_name="クイズタイトル")
+    statement = models.TextField(max_length=200, verbose_name="問題文")
+    thumbnail_image_url = models.URLField(
+        max_length=1000, verbose_name="画像URL")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     is_approved = models.BooleanField(default=False)
 

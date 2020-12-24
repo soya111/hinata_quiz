@@ -113,6 +113,7 @@ def edit(request, id):
         quiz.title = request.POST['title']
         quiz.statement = request.POST['statement']
         quiz.thumbnail_image_url = request.POST['thumbnail_image_url']
+        quiz.is_approved = False
         quiz.save()
 
         dict_post = dict(request.POST)

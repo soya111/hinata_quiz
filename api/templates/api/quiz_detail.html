@@ -33,10 +33,19 @@
     </table>
     {% if user == object.user %}
     <div class="d-grid gap-2 col-6 mx-auto mb-5">
-        <a class="btn btn-info" href="{% url 'quiz-edit' object.id %}">編集<i class="material-icons">edit</i></a>
+        <a class="btn btn-info center" href="{% url 'quiz-edit' object.id %}"><div>編集</div><i class="material-icons">edit</i></a>
     </div>
     {% endif %}
 
 </div>
+<style>
+    .center{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
 {% endblock %}
 
