@@ -12,17 +12,17 @@
             <div class="card-body">
                 <h5 class="card-title">{{ quiz.title }}</h5>
                 <p class="card-text">{{ quiz }}</p>
+                <ul class="list-group list-group-flush">
+                    {% for choice in quiz.get_choices %}
+                        <li
+                            {% if choice.is_correct %}
+                            style="color:crimson"
+                            {% endif %}
+                            class="list-group-item"
+                        >{{ choice.text }}</li>
+                    {% endfor %}
+                </ul>
             </div>
-            <ul class="list-group list-group-flush">
-                {% for choice in quiz.get_choices %}
-                    <li
-                        {% if choice.is_correct %}
-                        style="color:crimson"
-                        {% endif %}
-                        class="list-group-item"
-                    >{{ choice.text }}</li>
-                {% endfor %}
-            </ul>
             <div class="card-body">
                 <a href="{% url 'quiz-detail' quiz.id %}" class="card-link">詳細</a>
             </div>

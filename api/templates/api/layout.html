@@ -25,7 +25,7 @@
                         <a class="nav-link" href="{% url 'login' %}">ログイン</a>
                         <a class="nav-link" href="{% url 'signup' %}">ユーザー登録</a>
                         {% endif %}
-                        <a class="nav-link" href="{% url 'account' %}">{{user}}</a>
+                        <a class="nav-link center" href="{% url 'account' %}"><i class="material-icons">account_circle</i>{{user}}</a>
                     </div>
                 </div>
             </div>
@@ -46,6 +46,13 @@
             font-size: 3rem;
             margin: 1rem;
         }
+        .center{
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
     </style>
 </body>
 </html>
