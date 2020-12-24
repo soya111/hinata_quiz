@@ -7,27 +7,24 @@
 <ul>
     <div class="row">
     {% for quiz in object_list %}
-        <div class="col s12 m6 l4">
-            <div class="card">
-                <div class="card-image">
-                    <img src="{{ quiz.thumbnail_image_url }}">
-                    <span class="card-title">{{ quiz.title }}</span>
-                    <a class="btn-floating halfway-fab waves-effect waves-light red" href="{% url 'quiz-detail' quiz.id %}"><i class="material-icons">edit</i></a>
-                </div>
-                <div class="card-content">
-                    <p>{{ quiz }}</p>
-                    <ul class="collection">
-                        {% for choice in quiz.get_choices %}
-                            <li
-                                {% if choice.is_correct %}
-                                style="color:crimson"
-                                {% endif %}
-                                class="collection-item"
-                            >{{ choice.text }}</li>
-                        {% endfor %}
-                    </ul>
-                    <p>作成者:{{ quiz.user.username }}</p>
-                </div>
+        <div class="card" style="width: 18rem;">
+            <img src="{{ quiz.thumbnail_image_url }}" class="card-img-top" alt="...">
+            <div class="card-body">
+                <h5 class="card-title">{{ quiz.title }}</h5>
+                <p class="card-text">{{ quiz }}</p>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for choice in quiz.get_choices %}
+                    <li
+                        {% if choice.is_correct %}
+                        style="color:crimson"
+                        {% endif %}
+                        class="list-group-item"
+                    >{{ choice.text }}</li>
+                {% endfor %}
+            </ul>
+            <div class="card-body">
+                <a href="{% url 'quiz-detail' quiz.id %}" class="card-link">詳細</a>
             </div>
         </div>
     {% empty %}

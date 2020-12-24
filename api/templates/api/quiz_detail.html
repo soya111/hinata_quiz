@@ -5,18 +5,36 @@
 
 {% block content %}
 <div class="row center-align">
-    <p>問題文：{{ object }}</p>
-    <p>選択肢</p>
-    {% for choice in object.get_choices %}
-        <p
-            {% if choice.is_correct %}
-            style="color:crimson"
-            {% endif %}
-        >{{ choice.text }}</p>
-    {% endfor %}
-    <p>作成者：{{ object.user.username }}</p>
+    <table class="table">
+        <tr>
+            <th>タイトル</th>
+            <th>{{object.title}}</th>
+        </tr>
+        <tr>
+            <th>問題文</th>
+            <th>{{object}}</th>
+        </tr>
+        
+        {% for choice in object.get_choices %}
+            <tr>
+                <th>選択肢</th>
+                <th
+                    {% if choice.is_correct %}
+                    style="color:crimson"
+                    {% endif %}
+                >{{ choice.text }}</th>
+            </tr>
+        {% endfor %}
+        <img src="{{object.thumbnail_image_url}}" alt="">
+        <tr>
+            <th>作成者</th>
+            <th>{{ object.user.username }}</th>
+        </tr>
+    </table>
     {% if user == object.user %}
-    <a class="waves-effect waves-light btn" href="{% url 'quiz-edit' object.id %}"><i class="material-icons left">edit</i>編集</a>
+    <div class="d-grid gap-2 col-6 mx-auto mb-5">
+        <a class="btn btn-info" href="{% url 'quiz-edit' object.id %}">編集<i class="material-icons">edit</i></a>
+    </div>
     {% endif %}
 
 </div>

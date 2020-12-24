@@ -1,5 +1,5 @@
 from .models import Quiz, Choice
-from .forms import QuizForm
+from .forms import QuizForm, ChoiceForm
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
@@ -7,9 +7,11 @@ from django.views.generic.edit import UpdateView
 from django.views.generic import CreateView
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy, reverse
+import json
 
 
 # @csrf_exempt
@@ -48,6 +50,45 @@ class QuizDetailView(DetailView):
         return context
 
 
+class QuizCreateView(CreateView, LoginRequiredMixin):
+    template_name = 'api/quiz_add.html'
+
+    def get(self, request):
+        # if not request.user.is_authenticated:
+        #     return HttpResponseRedirect(reverse('login'))
+        context = {
+            'quiz_form': QuizForm(),
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return HttpResponseRedirect(reverse('login'))
+
+        choices = [
+            request.POST['incorrect_choice-{}'.format(i)] for i in range(1, 4)]
+
+        # choiceのバリデーション
+        if request.POST['correct_choice'] == '' or not any(choices):
+            return HttpResponse("400", status="400")
+
+        quiz = Quiz(title=request.POST['title'],
+                    statement=request.POST['statement'], thumbnail_image_url=request.POST['thumbnail_image_url'], user=request.user)
+        quiz.save()
+
+        choice = Choice(
+            quiz=quiz, text=request.POST['correct_choice'], is_correct=True)
+        choice.save()
+
+        for i in choices:
+            if not i:
+                break
+            choice = Choice(quiz=quiz, text=i, is_correct=False)
+            choice.save()
+
+        return HttpResponseRedirect(reverse('quiz-detail', args=[quiz.id]))
+
+
 def edit(request, id):
     quiz = Quiz.objects.get(id=id)
     if quiz.user != request.user:
@@ -55,9 +96,16 @@ def edit(request, id):
 
     if request.method == "GET":
         template_name = 'api/quiz_edit.html'
+
+        choices = quiz.get_choices()
+        correct_choice = list(filter(lambda x: x.is_correct == True, choices))
+        incorrect_choices = list(
+            filter(lambda x: x.is_correct == False, choices))
         context = {
             'quiz': quiz,
-            'form': QuizForm(instance=quiz)
+            'form': QuizForm(instance=quiz),
+            'correct_choice': correct_choice[0],
+            'incorrect_choices': incorrect_choices
         }
         return render(request, template_name, context)
 
@@ -66,8 +114,18 @@ def edit(request, id):
         quiz.statement = request.POST['statement']
         quiz.thumbnail_image_url = request.POST['thumbnail_image_url']
         quiz.save()
-        # if form.is_valid():
-        #     form.save()
+
+        dict_post = dict(request.POST)
+
+        correct_choice = Choice.objects.get(id=int(dict_post['ccid'][0]))
+        correct_choice.text = dict_post['cc'][0]
+        correct_choice.save()
+
+        for i, value in enumerate(dict_post['icid']):
+            incorrect_choice = Choice.objects.get(id=int(value))
+            incorrect_choice.text = dict_post['ic'][i]
+            incorrect_choice.save()
+
         return HttpResponseRedirect(reverse('quiz-detail', args=[id]))
 
         # class QuizUpdateView(UpdateView):

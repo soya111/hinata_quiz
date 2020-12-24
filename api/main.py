@@ -154,7 +154,8 @@ def handle_text(message, reply_token, source):
             thumbnail_image_url='https://cdn.hinatazaka46.com/images/14/f83/e7263bcddc5eee48b45337ace26dd.jpg',
             actions=[
                 PostbackAction(label='クイズスタート', data='{"type":"push_quiz"}'),
-                PostbackAction(label='クイズ投稿', data='{"type":"create_quiz"}'),
+                URIAction(label='クイズ投稿',
+                          uri='https://hinatazaka46.herokuapp.com/'),
             ])
         template_message = TemplateSendMessage(
             alt_text='日向坂46クイズ', template=buttons_template)
