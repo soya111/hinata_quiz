@@ -37,10 +37,22 @@ class QuizListView(ListView):
 class QuizDetailView(DetailView):
 
     model = Quiz
+    template_name = 'api/quiz_detail.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+
+    def get(self, request, pk):
+        quiz = Quiz.objects.get(pk=pk)
+
+        if quiz.is_approved == False and quiz.user != request.user:
+            return HttpResponse("権限がありません。ログインしてください。", status=403)
+
+        context = {
+            'object': quiz
+        }
+        return render(request, self.template_name, context)
 
 
 class QuizCreateView(CreateView, LoginRequiredMixin):
