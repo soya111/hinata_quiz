@@ -58,11 +58,13 @@ class QuizDetailView(DetailView):
 class QuizCreateView(CreateView, LoginRequiredMixin):
     template_name = 'api/quiz_add.html'
 
+    choices_num = 4
+
     def get(self, request):
         if not request.user.is_authenticated:
             return HttpResponseRedirect(reverse('login') + '?next=' + reverse('quiz-add'))
         context = {
-            'quiz_form': QuizForm(),
+            'choices_num': range(self.choices_num - 1)
         }
         return render(request, self.template_name, context)
 
@@ -70,11 +72,11 @@ class QuizCreateView(CreateView, LoginRequiredMixin):
         if not request.user.is_authenticated:
             return HttpResponseRedirect(reverse('login') + '?next=' + reverse('quiz-add'))
 
-        choices = [
-            request.POST['incorrect_choice-{}'.format(i)] for i in range(1, 4)]
+        dict_post = dict(request.POST)
+        incorrect_choices = dict_post['incorrect_choice']
 
         # choiceのバリデーション
-        if request.POST['correct_choice'] == '' or not any(choices):
+        if request.POST['correct_choice'] == '' or not any(incorrect_choices):
             return HttpResponse("400", status="400")
 
         quiz = Quiz(title=request.POST['title'],
@@ -85,7 +87,7 @@ class QuizCreateView(CreateView, LoginRequiredMixin):
             quiz=quiz, text=request.POST['correct_choice'], is_correct=True)
         choice.save()
 
-        for i in choices:
+        for i in incorrect_choices:
             if not i:
                 break
             choice = Choice(quiz=quiz, text=i, is_correct=False)
@@ -109,7 +111,6 @@ def edit(request, id):
             filter(lambda x: x.is_correct == False, choices))
         context = {
             'quiz': quiz,
-            'form': QuizForm(instance=quiz),
             'correct_choice': correct_choice[0],
             'incorrect_choices': incorrect_choices
         }
