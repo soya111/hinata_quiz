@@ -9,28 +9,35 @@
     <img src="{{quiz.thumbnail_image_url}}" alt="">
     <form action="{% url 'quiz-edit' quiz.id %}" method="post">
         {% csrf_token %}
-        <table class="table" style="margin: 1rem;">
-            {{form.as_table}}
-        </table>
-        <p>選択肢</p>
-        <table style="margin: 1rem;">
+        <table class="table mt-2">
             <tr>
-                <th>正解</th>
+                <th>クイズタイトル</th>
+                <td><input type="text" name="title" value="{{ quiz.title }}" maxlength="50" required></td>
             </tr>
             <tr>
-                <th><input type="text" name="cc" id="correct_choice" value="{{ correct_choice.text }}"></th>
-                <input type="hidden" name="ccid" value="{{correct_choice.id}}">
+                <th>問題文</th>
+                <td><input type="text" name="statement" value="{{ quiz.statement }}" maxlength="200" required></td>
             </tr>
             <tr>
-                <th>不正解</th>
+                <th>画像URL</th>
+                <td><input type="url" name="thumbnail_image_url" value="{{ quiz.thumbnail_image_url }}" maxlength="1000" required></td>
+            </tr>
+            <tr>
+                <th>選択肢(正解)</th>
+                <td>
+                    <input type="text" name="cc" id="correct_choice" value="{{ correct_choice.text }}">
+                    <input type="hidden" name="ccid" value="{{correct_choice.id}}">
+                </td>
             </tr>
             {% for i in incorrect_choices %}
-            <tr>
-                <th><input type="text" name="ic" id="incorrect_choice1" value="{{i.text}}"></th>
-                <input type="hidden" name="icid" value="{{i.id}}">
-            </tr>
+                <tr>
+                    <th>選択肢(不正解)</th>
+                    <td>
+                        <input type="text" name="ic" value="{{i.text}}">
+                        <input type="hidden" name="icid" value="{{i.id}}">
+                    </td>
+                </tr>
             {% endfor %}
-
         </table>
         <div class="d-grid gap-2 col-6 mx-auto mb-5">
             <button type="submit" class="btn btn-info text-light" style="margin: 1rem;">変更</button>
@@ -38,9 +45,13 @@
     </form>
 </div>
 <style>
-textarea, input {
-    height: 2rem;
-    max-width: 70%;
+input {
+    width: 50vw
+}
+tr{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 </style>
 {% endblock %}

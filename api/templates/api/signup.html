@@ -1,4 +1,7 @@
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+{% extends 'api/layout.html' %}
+
+{% block content %}
+
 
 <div class="container">
     <form method="post"class="mt-5">
@@ -16,9 +19,9 @@
     {% endfor %}
         <input type="hidden" name="next" value="{{ next }}" />
 
-        <button type="submit" class="btn btn-info">Signup</button>
+        <button type="submit" class="btn btn-info  text-light">Signup</button>
     </form>
-    <a href="{% url 'login' %}" class="center m-3">ログインはこちら</a>
+    <a href="{% url 'login' %}" class="center m-3 text-decoration-none">ログインはこちら</a>
 </div>
 <style>
     .center{
@@ -37,3 +40,5 @@
         max-width: 600px;
     }
 </style>
+
+{% endblock %}
