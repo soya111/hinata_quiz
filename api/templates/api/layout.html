@@ -11,9 +11,12 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar navbar-expand-lg fixed-top navbar-light">
             <div class="container-fluid">
-                <a class="navbar-brand" href="/">日向クイズ</a>
+                <a class="navbar-brand" href="/">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Hinatazaka46_logo.svg/160px-Hinatazaka46_logo.svg.png" alt="" srcset="">
+                    日向クイズ
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
                 </button>
@@ -44,8 +47,8 @@
         body{
             font-family: 'Noto Sans JP', sans-serif;
         }
-        nav{
-            /* padding: 0 1rem; */
+        .navbar-brand > img{
+            height: 35px;
         }
         h1{
             font-size: 3rem;
@@ -59,7 +62,15 @@
         .flex-start{
             justify-content: flex-start;
         }
-
+        main > .container{
+            margin-top: 65px;
+        }
+        .navbar-toggler{
+            border: 0px;
+        }
+        nav{
+            background-color: #e3f2fd;
+        }
     </style>
 </body>
 </html>

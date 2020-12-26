@@ -179,7 +179,8 @@ def handle_postback(data, reply_token, source):
 
 
 def push_quiz(reply_token):
-    quiz = Quiz.objects.filter(is_approved=True).order_by('?')[:1][0]
+    quiz = Quiz.objects.filter(is_approved=True).filter(
+        is_public=True).order_by('?')[:1][0]
     choices = quiz.get_choices()
 
     buttons_template = ButtonsTemplate(
