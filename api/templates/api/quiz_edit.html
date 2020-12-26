@@ -38,6 +38,28 @@
                     </td>
                 </tr>
             {% endfor %}
+            <tr>
+                <th>公開ステータス</th>
+                <td>
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        <label class="btn btn-secondary">
+                            <input type="radio" name="is_public" id="option1" autocomplete="off" value="True"
+                            {% if quiz.is_public %}
+                            checked
+                            {% endif %}
+                            > 公開
+                        </label>
+                        <label class="btn btn-secondary">
+                            <input type="radio" name="is_public" id="option2" autocomplete="off" value="False"
+                            {% if not quiz.is_public %}
+                            checked
+                            {% endif %}
+                            > 非公開
+                        </label>
+                    </div>
+                </td>
+            </tr>
+
         </table>
         <div class="d-grid gap-2 col-6 mx-auto mb-5">
             <button type="submit" class="btn btn-info text-light" style="margin: 1rem;">変更</button>
@@ -45,13 +67,17 @@
     </form>
 </div>
 <style>
-input {
-    width: 50vw
+input[type=text], input[type=url] {
+    width: 100%;
 }
 tr{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    vertical-align: middle;
+}
+th{
+    width: 30%;
+}
+td{
+    width: 70%;
 }
 </style>
 {% endblock %}

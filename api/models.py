@@ -11,6 +11,7 @@ class Quiz(models.Model):
         max_length=1000, verbose_name="画像URL")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     is_approved = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=False)
 
     def __str__(self):
         return self.statement
