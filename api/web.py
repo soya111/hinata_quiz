@@ -31,7 +31,7 @@ class QuizListView(ListView):
 
     def get_queryset(self):
         queryset = super(QuizListView, self).get_queryset()
-        return queryset.filter(is_approved=True)
+        return queryset.filter(is_approved=True).filter(is_public=True)
 
 
 class QuizDetailView(DetailView):
@@ -46,7 +46,10 @@ class QuizDetailView(DetailView):
     def get(self, request, pk):
         quiz = Quiz.objects.get(pk=pk)
 
-        if quiz.is_approved == False and quiz.user != request.user:
+        # クイズ作成者もしくはクイズが公開&認証済みの場合のみ詳細を見れる
+        if quiz.user == request.user or (quiz.is_public and quiz.is_approved):
+            pass
+        else:
             return HttpResponse("権限がありません。ログインしてください。", status=403)
 
         context = {
@@ -77,10 +80,10 @@ class QuizCreateView(CreateView, LoginRequiredMixin):
 
         # choiceのバリデーション
         if request.POST['correct_choice'] == '' or not any(incorrect_choices):
-            return HttpResponse("400", status="400")
+            return HttpResponse(status="400")
 
         quiz = Quiz(title=request.POST['title'],
-                    statement=request.POST['statement'], thumbnail_image_url=request.POST['thumbnail_image_url'], user=request.user)
+                    statement=request.POST['statement'], thumbnail_image_url=request.POST['thumbnail_image_url'], user=request.user, is_public=request.POST['is_public'])
         quiz.save()
 
         choice = Choice(
@@ -117,31 +120,34 @@ def edit(request, id):
         return render(request, template_name, context)
 
     elif request.method == "POST":
-        quiz.title = request.POST['title']
-        quiz.statement = request.POST['statement']
-        quiz.thumbnail_image_url = request.POST['thumbnail_image_url']
-        quiz.is_approved = False
-        quiz.save()
-
         dict_post = dict(request.POST)
 
+        # 正解選択肢
         correct_choice = Choice.objects.get(id=int(dict_post['ccid'][0]))
+
+        # 公開ステータスしか変わっていない場合はis_approvedは変更しない
+        if quiz.title == request.POST['title'] and quiz.statement == request.POST['statement'] and quiz.thumbnail_image_url == request.POST['thumbnail_image_url'] and correct_choice.text == dict_post['cc'][0] and all([Choice.objects.get(id=int(value)).text == dict_post['ic'][i] for i, value in enumerate(dict_post['icid'])]):
+            pass
+        else:
+            quiz.is_approved = False
+
         correct_choice.text = dict_post['cc'][0]
         correct_choice.save()
 
+        # 不正解選択肢
         for i, value in enumerate(dict_post['icid']):
             incorrect_choice = Choice.objects.get(id=int(value))
             incorrect_choice.text = dict_post['ic'][i]
             incorrect_choice.save()
 
+        # クイズ
+        quiz.title = request.POST['title']
+        quiz.statement = request.POST['statement']
+        quiz.thumbnail_image_url = request.POST['thumbnail_image_url']
+        quiz.is_public = request.POST['is_public']
+        quiz.save()
+
         return HttpResponseRedirect(reverse('quiz-detail', args=[id]))
-
-        # class QuizUpdateView(UpdateView):
-
-        #     model = Quiz
-
-        #     fields = ['title', 'statement', 'thumbnail_image_url']
-        #     template_name = 'api/quiz_edit.html'
 
 
 class UserQuizListView(ListView, LoginRequiredMixin):
@@ -151,7 +157,7 @@ class UserQuizListView(ListView, LoginRequiredMixin):
     def get(self, request):
 
         if not request.user.is_authenticated:
-            return HttpResponseRedirect(reverse('login'))
+            return HttpResponseRedirect(reverse('login') + '?next=' + reverse('account'))
 
         quiz_list = Quiz.objects.filter(user=request.user)
         context = {

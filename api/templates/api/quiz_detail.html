@@ -30,6 +30,27 @@
             <th>作成者</th>
             <td>{{ object.user.username }}</td>
         </tr>
+        <tr>
+            <th>公開ステータス</th>
+            <td>
+                {% if object.is_public %}
+                    公開
+                {% else %}
+                    非公開
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>認証ステータス</th>
+            <td>
+                {% if object.is_approved %}
+                    認証済み
+                {% else %}
+                    未認証
+                {% endif %}
+            </td>
+        </tr>
+        
     </table>
     {% if user == object.user %}
     <div class="d-grid gap-2 col-6 mx-auto mb-5">
