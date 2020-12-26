@@ -26,9 +26,14 @@
                     <a href="{% url 'quiz-detail' quiz.id %}" class="btn btn-info m-1 text-light">詳細</a>
                     <div class="m-2 center">
                         {% if quiz.is_approved %}
-                            <p class="m-0">認証済み</p><i class="material-icons">verified_user</i>
+                            <i class="material-icons">verified_user</i>
                         {% else %}
-                            <p class="m-0">未認証</p><i class="material-icons">privacy_tip</i>
+                            <i class="material-icons">privacy_tip</i>
+                        {% endif %}
+                        {% if quiz.is_public %}
+                            <i class="material-icons">public</i>
+                        {% else %}
+                            <i class="material-icons">lock</i>
                         {% endif %}
                     </div>
                 </div>
