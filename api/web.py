@@ -1,5 +1,4 @@
 from .models import Quiz, Choice, Nonce
-# from .main import push_redirect_to_line_message
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView

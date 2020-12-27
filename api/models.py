@@ -10,11 +10,14 @@ class Quiz(models.Model):
     thumbnail_image_url = models.URLField(
         max_length=1000, verbose_name="画像URL")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    is_approved = models.BooleanField(default=False)
-    is_public = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False, verbose_name='認証ステータス')
+    is_public = models.BooleanField(default=False, verbose_name='公開ステータス')
 
     def __str__(self):
-        return self.statement
+        return self.statement + ' '.join([i.text for i in self.get_choices()])
+
+    def choices_str(self):
+        return ' '.join([i.text for i in self.get_choices()])
 
     def get_choices(self):
         return Choice.objects.filter(quiz_id=self.id).all().order_by('?')
