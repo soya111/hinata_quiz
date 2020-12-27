@@ -2,6 +2,7 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
+from django.core.exceptions import ObjectDoesNotExist
 
 import os
 import logging
@@ -153,18 +154,29 @@ def index(request):
 
 def handle_text(message, reply_token, source):
     if message['text'] == 'クイズ':
+        actions = [
+            PostbackAction(label='クイズスタート', data='{"type":"push_quiz"}'),
+            URIAction(label='クイズ投稿',
+                      uri='https://hinatazaka46.herokuapp.com/'),
+        ]
+
+        user_id = source['userId']
+
+        try:
+            user_info = UserInfo.objects.get(line_id=user_id)
+            actions += [PostbackAction(label='アカウント連携解除',
+                                       data='{"type":"account_linkage_cancellation_confirm"}')]
+        except ObjectDoesNotExist as e:
+            print(e)
+            actions += [PostbackAction(label='アカウント連携',
+                                       data='{"type":"account_linkage"}')]
+
         buttons_template = ButtonsTemplate(
             title='日向坂46クイズ',
             text='日向坂46の知識を試そう！',
             thumbnail_image_url='https://cdn.hinatazaka46.com/images/14/f83/e7263bcddc5eee48b45337ace26dd.jpg',
-            actions=[
-                PostbackAction(label='クイズスタート', data='{"type":"push_quiz"}'),
-                URIAction(label='クイズ投稿',
-                          uri='https://hinatazaka46.herokuapp.com/'),
-                PostbackAction(label='アカウント連携',
-                               data='{"type":"account_linkage"}'),
-
-            ])
+            actions=actions
+        )
         template_message = TemplateSendMessage(
             alt_text='日向坂46クイズ', template=buttons_template)
         line_bot_api.reply_message(reply_token, template_message)
@@ -183,6 +195,12 @@ def handle_postback(data, reply_token, source, request):
             push_incorrect_message(reply_token)
     elif data['type'] == 'account_linkage':
         push_account_linkage_message(data, reply_token, source, request)
+    elif data['type'] == 'account_linkage_cancellation_confirm':
+        push_account_linkage_cancellation_confirm_message(
+            data, reply_token, source)
+    elif data['type'] == 'account_linkage_cancellation':
+        push_account_linkage_cancellation_message(
+            data, reply_token, source)
     else:
         line_bot_api.reply_message(
             reply_token, TextSendMessage(text=str(data)))
@@ -305,11 +323,9 @@ def push_account_linkage_message(data, reply_token, source, request):
 
 def handle_account_link_event(data, reply_token, source):
     if data['result'] == 'ok':
-        # nonce = Nonce.objects.order_by('id').reverse()[0].nonce
         nonce = Nonce.objects.get(nonce=data['nonce'])
         user_info = UserInfo.objects.get_or_create(
             user=nonce.user, line_id=source['userId'])
-        # user_info.save()
 
         buttons_template = ButtonsTemplate(
             text="{}さんのアカウント認証が完了しました。".format(nonce.user.username),
@@ -319,7 +335,7 @@ def handle_account_link_event(data, reply_token, source):
             ]
         )
         template_message = TemplateSendMessage(
-            alt_text='アカウント認証', template=buttons_template)
+            alt_text='アカウント認証完了', template=buttons_template)
         line_bot_api.reply_message(reply_token, template_message)
     elif data['result'] == 'failed':
         buttons_template = ButtonsTemplate(
@@ -330,5 +346,34 @@ def handle_account_link_event(data, reply_token, source):
             ]
         )
         template_message = TemplateSendMessage(
-            alt_text='アカウント認証', template=buttons_template)
+            alt_text='アカウント認証失敗', template=buttons_template)
         line_bot_api.reply_message(reply_token, template_message)
+
+
+def push_account_linkage_cancellation_confirm_message(data, reply_token, source):
+    text = 'アカウント連携を解除しますか？'
+    confirm_template = ConfirmTemplate(
+        text=text,
+        actions=[
+            PostbackAction(
+                label='解除する', data='{"type":"account_linkage_cancellation"}'),
+            MessageAction(label='解除しない', text='解除しない')
+        ]
+    )
+    template_message = TemplateSendMessage(
+        alt_text=text, template=confirm_template)
+    line_bot_api.reply_message(reply_token, template_message)
+
+
+def push_account_linkage_cancellation_message(data, reply_token, source):
+    user_id = source['userId']
+    try:
+        user_info = UserInfo.objects.get(line_id=user_id)
+    except ObjectDoesNotExist as e:
+        print(e)
+        line_bot_api.reply_message(
+            reply_token, TextSendMessage(text='エラーが発生しました。'))
+
+    user_info.delete()
+    line_bot_api.reply_message(
+        reply_token, TextSendMessage(text='アカウント連携が解除されました。'))
