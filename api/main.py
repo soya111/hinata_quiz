@@ -7,11 +7,12 @@ import os
 import logging
 import json
 import random
+import requests
 # import log.logconfig
 from utils import tool
 from dotenv import load_dotenv
 
-from .models import Quiz, Choice
+from .models import Quiz, Choice, Nonce, UserInfo
 
 from linebot import (
     LineBotApi, WebhookHandler
@@ -125,7 +126,11 @@ def index(request):
                         logger.debug(event)
                     elif event['type'] == 'postback':
                         handle_postback(eval(event['postback']['data']),
-                                        reply_token, event['source'])
+                                        reply_token, event['source'], request)
+                    elif event['type'] == 'accountLink':
+                        handle_account_link_event(
+                            event['link'], reply_token, event['source'])
+
         except LineBotApiError as e:
             print("Got exception from LINE Messaging API: %s\n" % e.message)
             for m in e.error.details:
@@ -156,6 +161,9 @@ def handle_text(message, reply_token, source):
                 PostbackAction(label='クイズスタート', data='{"type":"push_quiz"}'),
                 URIAction(label='クイズ投稿',
                           uri='https://hinatazaka46.herokuapp.com/'),
+                PostbackAction(label='アカウント連携',
+                               data='{"type":"account_linkage"}'),
+
             ])
         template_message = TemplateSendMessage(
             alt_text='日向坂46クイズ', template=buttons_template)
@@ -165,7 +173,7 @@ def handle_text(message, reply_token, source):
         pass
 
 
-def handle_postback(data, reply_token, source):
+def handle_postback(data, reply_token, source, request):
     if data['type'] == 'push_quiz':
         push_quiz(reply_token)
     elif data['type'] == 'quiz_answer':
@@ -173,6 +181,8 @@ def handle_postback(data, reply_token, source):
             push_correct_message(reply_token)
         else:
             push_incorrect_message(reply_token)
+    elif data['type'] == 'account_linkage':
+        push_account_linkage_message(data, reply_token, source, request)
     else:
         line_bot_api.reply_message(
             reply_token, TextSendMessage(text=str(data)))
@@ -259,3 +269,66 @@ def push_incorrect_message(reply_token):
         alt_text='日向坂46クイズ', template=buttons_template)
 
     line_bot_api.reply_message(reply_token, template_message)
+
+
+def push_account_linkage_message(data, reply_token, source, request):
+    endpoint = 'https://api.line.me/v2/bot/user/{}/linkToken'.format(
+        source['userId'])
+    headers = {
+        'Authorization': 'Bearer {}'.format(channel_access_token)
+    }
+    try:
+        r = requests.post(endpoint, headers=headers)
+    except e:
+        print(e)
+        line_bot_api.reply_message(
+            reply_token, TextSendMessage(text='エラーが発生しました。'))
+
+    link_token = json.loads(r.text)['linkToken']
+
+    url = '{}://{}/'.format('https' if request.is_secure()
+                            else 'http', request.get_host())
+
+    # url = 'https://hinatazaka46.herokuapp.com/'
+
+    buttons_template = ButtonsTemplate(
+        text="アカウント認証",
+        actions=[
+            URIAction(label='アカウント認証リンク',
+                      uri='{}login/?linkToken={}'.format(url, link_token)),
+        ]
+    )
+    template_message = TemplateSendMessage(
+        alt_text='アカウント認証', template=buttons_template)
+    line_bot_api.reply_message(reply_token, template_message)
+
+
+def handle_account_link_event(data, reply_token, source):
+    if data['result'] == 'ok':
+        # nonce = Nonce.objects.order_by('id').reverse()[0].nonce
+        nonce = Nonce.objects.get(nonce=data['nonce'])
+        user_info = UserInfo.objects.get_or_create(
+            user=nonce.user, line_id=source['userId'])
+        # user_info.save()
+
+        buttons_template = ButtonsTemplate(
+            text="{}さんのアカウント認証が完了しました。".format(nonce.user.username),
+            actions=[
+                URIAction(label='アカウント確認',
+                          uri='https://hinatazaka46.herokuapp.com/account/'),
+            ]
+        )
+        template_message = TemplateSendMessage(
+            alt_text='アカウント認証', template=buttons_template)
+        line_bot_api.reply_message(reply_token, template_message)
+    elif data['result'] == 'failed':
+        buttons_template = ButtonsTemplate(
+            text="アカウント認証に失敗しました。",
+            actions=[
+                PostbackAction(label='やり直す',
+                               data='{"type":"account_linkage"}'),
+            ]
+        )
+        template_message = TemplateSendMessage(
+            alt_text='アカウント認証', template=buttons_template)
+        line_bot_api.reply_message(reply_token, template_message)

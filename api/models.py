@@ -30,7 +30,17 @@ class Choice(models.Model):
         return self.text
 
 
+class Nonce(models.Model):
+    user = models.ForeignKey(User, models.CASCADE)
+    nonce = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.nonce
+
+
 class UserInfo(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    line_id = models.TextField()
-    experience_point = models.IntegerField()
+    user = models.OneToOneField(User, models.CASCADE)
+    line_id = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.user.username
