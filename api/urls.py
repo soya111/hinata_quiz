@@ -1,9 +1,10 @@
 from django.urls import path
 
 from . import views, main, web
-from .web import QuizListView, QuizDetailView, SignUpView, QuizCreateView, UserQuizListView
+from .web import QuizListView, QuizDetailView, SignUpView, QuizCreateView, UserQuizListView, LoginView
 
 urlpatterns = [
+    path('login/', LoginView.as_view(), name='login'),
     path('api/', main.index, name='main_index'),
     path('', QuizListView.as_view(), name='quiz-list'),
     path('quiz/', QuizListView.as_view(), name='quiz-list'),

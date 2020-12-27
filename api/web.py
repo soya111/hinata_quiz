@@ -1,23 +1,56 @@
-from .models import Quiz, Choice
-from .forms import QuizForm, ChoiceForm
+from .models import Quiz, Choice, Nonce
+# from .main import push_redirect_to_line_message
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView
 from django.views.generic import CreateView
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy, reverse
 import json
+import secrets
 
 
 class SignUpView(CreateView):
     form_class = UserCreationForm
     success_url = reverse_lazy('login')
     template_name = 'api/signup.html'
+
+
+class LoginView(LoginView):
+    def dispatch(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            if 'linkToken' in request.GET:
+                context = {
+                    'link_token': request.GET.get('linkToken'),
+                }
+                return render(request, self.template_name, context)
+            return super().dispatch(request, *args, **kwargs)
+
+        elif request.method == 'POST':
+            if request.POST['link_token']:
+                username = request.POST['username']
+                password = request.POST['password']
+                user = authenticate(
+                    request, username=username, password=password)
+                if user is not None:
+                    login(request, user)
+                    link_token = request.POST['link_token']
+                    nonce = secrets.token_bytes(16)
+                    nonce_model = Nonce(
+                        user=user, nonce=nonce)
+                    nonce_model.save()
+                    endpoint = 'https://access.line.me/dialog/bot/accountLink?linkToken={}&nonce={}'.format(
+                        link_token, nonce)
+                    return HttpResponseRedirect(endpoint)
+
+            return super().dispatch(request, *args, **kwargs)
 
 
 class QuizListView(ListView):
