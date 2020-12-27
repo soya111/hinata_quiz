@@ -14,7 +14,7 @@ class Quiz(models.Model):
     is_public = models.BooleanField(default=False, verbose_name='公開ステータス')
 
     def __str__(self):
-        return self.statement + ' '.join([i.text for i in self.get_choices()])
+        return self.statement
 
     def choices_str(self):
         return ' '.join([i.text for i in self.get_choices()])
