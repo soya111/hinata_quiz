@@ -9,6 +9,10 @@ verify_ssl = true
 django = "*"
 line-bot-sdk = "*"
 python-dotenv = "*"
+gunicorn = "*"
+django-heroku = "*"
+dj-database-url = "*"
+whitenoise = "*"
 
 [requires]
 python_version = "3.9"
