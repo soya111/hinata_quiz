@@ -26,12 +26,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-# SECURITY WARNING: keep the secret key used in production secret!
-if not DEBUG:
-    SECRET_KEY = os.environ['SECRET_KEY']
-    import django_heroku
-    django_heroku.settings(locals())
-
 ALLOWED_HOSTS = [
     '.herokuapp.com',
     '127.0.0.1'
@@ -149,6 +143,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 #     )
 
 LOGIN_REDIRECT_URL = '/'
+
+# SECURITY WARNING: keep the secret key used in production secret!
+if not DEBUG:
+    SECRET_KEY = os.environ['SECRET_KEY']
+    import django_heroku
+    django_heroku.settings(locals())
 
 
 try:
