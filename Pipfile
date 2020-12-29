@@ -9,6 +9,7 @@ verify_ssl = true
 django = "*"
 line-bot-sdk = "*"
 python-dotenv = "*"
+whitenoise = "*"
 
 [requires]
 python_version = "3.9"
