@@ -35,7 +35,7 @@ from linebot.models import (
     MemberJoinedEvent, MemberLeftEvent,
     FlexSendMessage, BubbleContainer,
     ImageComponent, BoxComponent,
-    TextComponent, IconComponent, ButtonComponent,
+    TextComponent, SpacerComponent, IconComponent, ButtonComponent,
     SeparatorComponent, QuickReply, QuickReplyButton,
     ImageSendMessage
 )
