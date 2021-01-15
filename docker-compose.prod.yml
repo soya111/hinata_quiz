@@ -5,31 +5,33 @@ services:
     image: postgres:11.4-alpine
     ports: 
       - "5432"
-    environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
     volumes:
       - db_data:/var/lib/postgresql/data
+    env_file: .env.db
+
   web:
-    build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    command: gunicorn hinata_quiz.wsgi --bind 0.0.0.0:8000
     volumes:
-      - .:/usr/src/app/
+      - static_volume:/usr/src/app/staticfiles
     # 環境変数を指定
-    environment:
-      # 1ならデバックモード
-      - DEBUG=1
-      - DATABASE_ENGINE=django.db.backends.postgresql
-      - DATABASE_DB=postgres
-      - DATABASE_USER=postgres
-      - DATABASE_PASSWORD=postgres
-      - DATABASE_HOST=db
-      - DATABASE_PORT=5432
-    ports:
-      - "8000:8000"
+    env_file: .env
+    expose: 
+      - 8000
     depends_on:
       - db
+  
+  nginx:
+    build: ./nginx
+    volumes: 
+      - static_volume:/usr/scr/app/staticfiles
+    ports: 
+      - 1337:80
+    depends_on: 
+      - web
 
 volumes:
   db_data:
+  static_volume:
