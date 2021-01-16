@@ -1,0 +1,37 @@
+version: "3"
+   
+services:
+  db:
+    image: postgres:11.4-alpine
+    ports: 
+      - "5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    env_file: .env.db
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    command: gunicorn hinata_quiz.wsgi --bind 0.0.0.0:8000
+    volumes:
+      - static_volume:/usr/src/app/staticfiles
+    # 環境変数を指定
+    env_file: .env
+    expose: 
+      - 8000
+    depends_on:
+      - db
+  
+  nginx:
+    build: ./nginx
+    volumes: 
+      - static_volume:/usr/scr/app/staticfiles
+    ports: 
+      - 1337:80
+    depends_on: 
+      - web
+
+volumes:
+  db_data:
+  static_volume:
