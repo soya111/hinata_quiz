@@ -1,49 +1,44 @@
 # Hinata Quiz
 
-## 概要
+## About
 
 LINE Bot 日向クイズのコード。
 
-本番環境でほぼ同じ物が動いているので、
-
 ↓こちらから友だち登録お待ちしています！↓
 
-<a href="https://lin.ee/9EoVmJf"><img src="https://scdn.line-apps.com/n/line_add_friends/btn/ja.png" alt="友だち追加" height="36" border="0"></a>
+<div style="display: flex; flex-direction: column;">
+    <a href="https://lin.ee/9EoVmJf" style="margin: auto;"><img src="https://scdn.line-apps.com/n/line_add_friends/btn/ja.png" alt="友だち追加" height="36" border="0"></a>
+    <img src="https://qr-official.line.me/sid/M/023palzz.png" width="30%" style="margin: auto;">
+</div>
 
-<img src="https://qr-official.line.me/sid/M/023palzz.png">
-
-## 技術的特徴
+## Features
 
 - Djangoアプリケーション
+- Docker
+- Docker Compose
 - LINE Messaging API
 - pipenv
 
-## 使い方
+## Usage
 
 1. このリポジトリをクローン
 
-1. 依存関係のインストール
+1. コンテナの起動
 
     ```
-    pipenv install
-    ```
-
-1. マイグレーションファイル作成
-
-    ```
-    python manage.py makemigrations
+    docker-compose up -d --build
     ```
 
 1. マイグレーション実行
 
     ```
-    python manage.py migrate
+    docker-compose exec web python manage.py migrate --noinput
     ```
 
 1. 管理者作成
 
     ```
-    python manage.py createsuperuser
+    docker-compose exec web python manage.py createsuperuser
     ```
 
 1. SECRET_KEY生成
@@ -56,7 +51,6 @@ LINE Bot 日向クイズのコード。
 
     ```
     SECRET_KEY = 'your_secret_key'
-
     ```
 1. LINE Messaging API関係
 
@@ -121,6 +115,6 @@ LINE Bot 日向クイズのコード。
 
 以上で設定は完了。AdminからQuizを作成すれば配信される。
 
-## 最後に
+## Contributing
 
 このプロジェクトに何か問題を見つけた方はぜひissueをお待ちしております。
