@@ -23,4 +23,4 @@ COPY ./entrypoint.sh /usr/src/app/entrypoint.sh
 # ホストのカレントディレクトリ（現在はappディレクトリ）を作業ディレクトリにコピー
 COPY . /usr/src/app/
 
-ENTRYPOINT [ "/usr/src/app/entrypoint.sh" ]
+# ENTRYPOINT [ "/usr/src/app/entrypoint.sh" ]
