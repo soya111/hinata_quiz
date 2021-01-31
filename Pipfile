@@ -10,7 +10,6 @@ django = "*"
 line-bot-sdk = "*"
 python-dotenv = "*"
 gunicorn = "*"
-psycopg2 = "*"
 
 [requires]
 python_version = "3.9"
