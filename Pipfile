@@ -9,7 +9,7 @@ verify_ssl = true
 django = "*"
 line-bot-sdk = "*"
 python-dotenv = "*"
-gunicorn = "*"
+uWSGI = "*"
 
 [requires]
 python_version = "3.9"

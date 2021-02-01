@@ -1,4 +1,4 @@
-version: "3"
+version: "3.9"
    
 services:
   db:
@@ -13,9 +13,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.prod
-    command: gunicorn hinata_quiz.wsgi --bind 0.0.0.0:8000
+    command: uwsgi --socket :8000 --master --enable-threads --module hinata_quiz.wsgi
     volumes:
-      - static_volume:/usr/src/app/staticfiles
+      - static_volume:/vol/web
     # 環境変数を指定
     env_file: .env
     expose: 
@@ -26,7 +26,7 @@ services:
   nginx:
     build: ./nginx
     volumes: 
-      - static_volume:/usr/scr/app/staticfiles
+      - static_volume:/vol/static
     ports: 
       - 1337:80
     depends_on: 

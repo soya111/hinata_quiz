@@ -1,5 +1,11 @@
-FROM nginx:1.19.6-alpine
+FROM nginxinc/nginx-unprivileged:1-alpine
 
-# デフォルトのconfを消して、別の設定を追加
-RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx.conf /etc/nginx/conf.d
+COPY ./default.conf /etc/nginx/conf.d/default.conf
+COPY ./uwsgi_params /etc/nginx/uwsgi_params
+
+USER root
+
+RUN mkdir -p /vol/static
+RUN chmod 755 /vol/static
+
+USER nginx

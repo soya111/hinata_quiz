@@ -1,6 +1,6 @@
 FROM python:3.9-alpine
-# 作業ディレクトリを設定
-WORKDIR /usr/src/app
+# # 作業ディレクトリを設定
+# WORKDIR /usr/src/app
 
 # 環境変数を設定
 # Pythonがpyc filesとdiscへ書き込むことを防ぐ
@@ -8,28 +8,33 @@ ENV PYTHONDONTWRITEBYTECODE 1
 # Pythonが標準入出力をバッファリングすることを防ぐ
 ENV PYTHONUNBUFFERED 1
 
-# psycopg2のインストール
-RUN apk update \
-    && apk add --virtual build-deps gcc python3-dev musl-dev \
-    && apk add postgresql-dev \
-    && pip install psycopg2 \
-    && apk del build-deps
-
-# Pipenvをインストール
-RUN pip install --upgrade pip \
-&& pip install pipenv
+ENV PATH="/scripts:${PATH}"
 
 # ホストのpipfileをコンテナの作業ディレクトリにコピー
-COPY ./Pipfile /usr/src/app/Pipfile
-
-# pipfileからパッケージをインストールしてDjango環境を構築
-RUN pipenv install --skip-lock --system --dev
-
-# entrypoint.shをコピー
-COPY ./entrypoint.prod.sh /usr/src/app/entrypoint.prod.sh
+COPY ./Pipfile /Pipfile
+RUN apk add --update --no-cache --virtual .tmp gcc libc-dev linux-headers \
+    && apk add postgresql-dev \
+    && pip install --upgrade pip \
+    && pip install psycopg2 \
+    && pip install pipenv \
+    && pipenv install --skip-lock --system --dev \
+    && apk del .tmp
 
 # ホストのカレントディレクトリ（現在はappディレクトリ）を作業ディレクトリにコピー
-COPY . /usr/src/app/
+
+RUN mkdir /app
+COPY . /app
+WORKDIR /app
+COPY ./scripts /scripts
+
+RUN chmod +x /scripts/*
+
+RUN mkdir -p /vol/web/media
+RUN mkdir -p /vol/web/static
+RUN adduser -D user
+RUN chown -R user:user /vol
+RUN chmod -R 755 /vol/web
+USER user
 
 # entrypoint.shを実行
-ENTRYPOINT ["/usr/src/app/entrypoint.prod.sh"]
+ENTRYPOINT ["/scripts/entrypoint.prod.sh"]
