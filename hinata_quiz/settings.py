@@ -137,18 +137,18 @@ MEDIA_URL = '/static/media/'
 STATIC_ROOT = '/vol/web/static'
 MEDIA_ROOT = '/vol/web/media'
 
-if DEBUG:
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime)s %(levelname)s %(message)s',
-    )
-else:
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime)s %(levelname)s %(message)s',
-        filename='/my_log_file.log',
-        filemode='a'
-    )
+# if DEBUG:
+#     logging.basicConfig(
+#         level=logging.DEBUG,
+#         format='%(asctime)s %(levelname)s %(message)s',
+#     )
+# else:
+#     logging.basicConfig(
+#         level=logging.DEBUG,
+#         format='%(asctime)s %(levelname)s %(message)s',
+#         filename='/my_log_file.log',
+#         filemode='a'
+#     )
 
 LOGIN_REDIRECT_URL = '/'
 

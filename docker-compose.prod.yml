@@ -10,9 +10,10 @@ services:
     env_file: .env.db
 
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile.prod
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile.prod
+    image: 344185791014.dkr.ecr.ap-northeast-1.amazonaws.com/hinata_quiz:latest
     command: uwsgi --socket :8000 --master --enable-threads --module hinata_quiz.wsgi
     volumes:
       - static_volume:/vol/web
@@ -24,11 +25,12 @@ services:
       - db
   
   nginx:
-    build: ./nginx
+    # build: ./nginx
+    image: 344185791014.dkr.ecr.ap-northeast-1.amazonaws.com/hinata_quiz_nginx:latest
     volumes: 
       - static_volume:/vol/static
     ports: 
-      - 1337:80
+      - 80:80
     depends_on: 
       - web
 
