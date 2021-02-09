@@ -9,7 +9,8 @@ verify_ssl = true
 django = "*"
 line-bot-sdk = "*"
 python-dotenv = "*"
-uWSGI = "*"
+gunicorn = "*"
+django-heroku = "*"
 
 [requires]
 python_version = "3.9"
